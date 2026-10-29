@@ -44,6 +44,27 @@ copy to maintain rather than ~130 drifting copies.
 -Yes         allow unattended prerequisite install (uv via winget)
 ```
 
+## Modes
+
+`-Mode mcp` is the default and does only the MCP registration described above.
+
+| Mode | Does | Never does |
+|---|---|---|
+| `mcp` | registers the stdio server in every detected client | touch the webapp or any `.exe` |
+| `webapp` | runs the repo's `start.ps1` (winget prereqs, `uv sync` with `SyncExtras`, npm install, uvicorn + vite). `-NoStart` provisions only, `-OpenBrowser` lets the launcher open a browser | register an MCP server |
+| `desktop` | finds the `.exe` asset in the latest GitHub release, downloads it, prints its SHA256, runs it silently (`/S`). **Requires `-Yes`** | run without `-Yes`; it names the asset and stops |
+| `all` | `mcp` + report webapp/desktop availability | start servers or run installers |
+
+```powershell
+.\install-fleet-mcp.ps1 -Repo foo-mcp -Mode all                 # what else exists?
+.\install-fleet-mcp.ps1 -Repo foo-mcp -Mode webapp              # launch it
+.\install-fleet-mcp.ps1 -Repo foo-mcp -Mode desktop -Yes        # run the NSIS installer
+```
+
+Desktop installers are never executed as a side effect of `-Mode mcp`: silently
+running an NSIS package while "registering an MCP server" is a system-level action
+nobody asked for.
+
 ## Source of truth
 
 Canonical copies live in `mcp-central-docs/scripts/` (private). These files are
